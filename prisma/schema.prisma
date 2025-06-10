@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User{ //father 
+  id String @id @default(uuid())
+  email String @unique
+  password String
+  role UserRole
+  needPasswordChange Boolean @default(true)
+  status UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admin Admin? @relation("UserToAdmin")
+
+@@map("users")
+}
+
+
+model Admin{ //child ---admin is subclass of User and its under the USer super class so it need to be linked with USer
+  id String @id @default(uuid())
+  name String 
+  email String @unique
+  profilePhoto String?
+  contactNumber String
+  isDeleted Boolean @default(false)
+  user User @relation("UserToAdmin", fields: [email], references: [email])
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+@@map("admin")
+}
+
+
+enum UserRole{
+  SUPER_ADMIN
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+enum UserStatus{
+  ACTIVE
+  BLOCK
+  DELETED
+
+}
