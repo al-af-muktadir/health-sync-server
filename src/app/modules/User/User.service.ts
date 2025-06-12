@@ -8,11 +8,24 @@ import bcrypt from "bcrypt";
 import { searchableFields } from "./User.constant";
 import { pagination } from "../../../utils/Paginator";
 import { prisma } from "../../../shared/Prisma";
+import { fileUploader } from "../../../shared/fileUploader";
 
-const createUserIntoDb = async (data: any) => {
-  const hashedPassword = await bcrypt.hash(data.password, 12);
+const createAdminIntoDb = async (req: any) => {
+  const file = req.file;
+  // if (file) {
+  //   const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+  //   req.body.admin.profilePhoto = uploadToCloudinary?.secure_url;
+  // }
+  if (file) {
+    const uploadToCloudinary = (await fileUploader.uploadToCloudinary(
+      file
+    )) as { secure_url?: string };
+    req.body.admin.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  const hashedPassword = await bcrypt.hash(req.body.password, 12);
   const userData = {
-    email: data.admin.email,
+    email: req.body.admin.email,
     password: hashedPassword,
     role: UserRole.ADMIN,
   };
@@ -23,7 +36,7 @@ const createUserIntoDb = async (data: any) => {
     });
 
     const createAdminData = await transactionClient.admin.create({
-      data: data.admin,
+      data: req.body.admin,
     });
 
     return createAdminData;
@@ -133,7 +146,7 @@ const deleteUser = async (id: any) => {
   return result;
 };
 export const UserServices = {
-  createUserIntoDb,
+  createAdminIntoDb,
   getAllUserFromDb,
   deleteUser,
 };

@@ -5,8 +5,8 @@ import { sendResponse } from "../../../utils/sendResponse";
 import { QueriesFields } from "./User.constant";
 import { UserServices } from "./User.service";
 
-const createUser = catchAsync(async (req, res) => {
-  const result = await UserServices.createUserIntoDb(req.body);
+const createAdmin = catchAsync(async (req, res) => {
+  const result = await UserServices.createAdminIntoDb(req);
   sendResponse(res, {
     statusCode: 200,
     message: "User Created Successfully",
@@ -44,7 +44,7 @@ const userSoftDelete = catchAsync(async (req, res) => {
 });
 
 export const UserController = {
-  createUser,
+  createAdmin,
   getAllUser,
   userSoftDelete,
 };
