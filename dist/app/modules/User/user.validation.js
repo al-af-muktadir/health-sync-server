@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userValidation = exports.createDoctor = void 0;
 const zod_1 = require("zod");
-const prisma_1 = require("../../../generated/prisma");
+const client_1 = require("../../../generated/prisma/client");
 const createAdmin = zod_1.z.object({
     password: zod_1.z.string({ required_error: "Password is required" }),
     admin: zod_1.z.object({
@@ -27,7 +27,7 @@ exports.createDoctor = zod_1.z.object({
             required_error: "Registration number is required",
         }),
         experience: zod_1.z.number().int().nonnegative().optional(), // Matches Int in Prisma
-        gender: zod_1.z.enum([prisma_1.Gender.MALE, prisma_1.Gender.FEMALE]),
+        gender: zod_1.z.enum([client_1.Gender.MALE, client_1.Gender.FEMALE]),
         appointmentFee: zod_1.z.number({ required_error: "Appointment fee is required" }),
         qualification: zod_1.z.string({ required_error: "Qualification is required" }),
         currentWorkingPlace: zod_1.z.string({

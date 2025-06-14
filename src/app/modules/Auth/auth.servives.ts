@@ -1,5 +1,5 @@
 import { Secret } from "jsonwebtoken";
-import { UserRole, UserStatus } from "../../../generated/prisma";
+import { UserRole, UserStatus } from "../../../generated/prisma/client";
 import { jwtEncoded } from "../../../shared/jwtEncoder";
 import { prisma } from "../../../shared/Prisma";
 import bcrypt from "bcrypt";

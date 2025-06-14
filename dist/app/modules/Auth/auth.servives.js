@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authServices = void 0;
-const prisma_1 = require("../../../generated/prisma");
+const client_1 = require("../../../generated/prisma/client");
 const jwtEncoder_1 = require("../../../shared/jwtEncoder");
 const Prisma_1 = require("../../../shared/Prisma");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -34,21 +34,21 @@ const loginUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
         throw new Error("Password Is Incorrect");
     }
     let data = {};
-    if (userInfo.role === prisma_1.UserRole.ADMIN) {
+    if (userInfo.role === client_1.UserRole.ADMIN) {
         data = yield Prisma_1.prisma.admin.findUniqueOrThrow({
             where: {
                 email: userInfo.email,
             },
         });
     }
-    else if (userInfo.role === prisma_1.UserRole.DOCTOR) {
+    else if (userInfo.role === client_1.UserRole.DOCTOR) {
         data = yield Prisma_1.prisma.doctor.findUniqueOrThrow({
             where: {
                 email: userInfo.email,
             },
         });
     }
-    else if (userInfo.role === prisma_1.UserRole.PATIENT) {
+    else if (userInfo.role === client_1.UserRole.PATIENT) {
         data = yield Prisma_1.prisma.patient.findUniqueOrThrow({
             where: {
                 email: userInfo.email,
@@ -81,25 +81,25 @@ const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     const userData = yield Prisma_1.prisma.user.findUniqueOrThrow({
         where: {
             email: decodedData.email,
-            status: prisma_1.UserStatus.ACTIVE,
+            status: client_1.UserStatus.ACTIVE,
         },
     });
     let data = {};
-    if (userData.role === prisma_1.UserRole.ADMIN) {
+    if (userData.role === client_1.UserRole.ADMIN) {
         data = yield Prisma_1.prisma.admin.findUniqueOrThrow({
             where: {
                 email: userData.email,
             },
         });
     }
-    else if (userData.role === prisma_1.UserRole.DOCTOR) {
+    else if (userData.role === client_1.UserRole.DOCTOR) {
         data = yield Prisma_1.prisma.doctor.findUniqueOrThrow({
             where: {
                 email: userData.email,
             },
         });
     }
-    else if (userData.role === prisma_1.UserRole.PATIENT) {
+    else if (userData.role === client_1.UserRole.PATIENT) {
         data = yield Prisma_1.prisma.patient.findUniqueOrThrow({
             where: {
                 email: userData.email,
@@ -119,7 +119,7 @@ const changePassword = (userData, data) => __awaiter(void 0, void 0, void 0, fun
     const user = yield Prisma_1.prisma.user.findUniqueOrThrow({
         where: {
             email: userData.email,
-            status: prisma_1.UserStatus.ACTIVE,
+            status: client_1.UserStatus.ACTIVE,
         },
     });
     const isPasswordMatched = bcrypt_1.default.compare(data.oldPassword, user.password);
@@ -145,7 +145,7 @@ const forgotPassword = (payload) => __awaiter(void 0, void 0, void 0, function* 
     const userData = yield Prisma_1.prisma.user.findUniqueOrThrow({
         where: {
             email: payload.email,
-            status: prisma_1.UserStatus.ACTIVE,
+            status: client_1.UserStatus.ACTIVE,
         },
     });
     const forgotPasswordToken = jwtEncoder_1.jwtEncoded.generateToken({ email: userData.email, role: userData.role }, config_1.default.jwt_secret, config_1.default.jwt_expires_in);
@@ -163,7 +163,7 @@ const resetPassword = (token, payload) => __awaiter(void 0, void 0, void 0, func
     yield Prisma_1.prisma.user.findUniqueOrThrow({
         where: {
             id: payload.id,
-            status: prisma_1.UserStatus.ACTIVE,
+            status: client_1.UserStatus.ACTIVE,
         },
     });
     const verifiedUser = jwtEncoder_1.jwtEncoded.verifyToken(token, config_1.default.jwt_secret);

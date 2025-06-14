@@ -5,7 +5,7 @@ import { fileUploader } from "../../../shared/fileUploader";
 import config from "../../../config";
 import { userValidation } from "./user.validation";
 import { auth } from "../../middlewares/auth";
-import { UserRole } from "../../../generated/prisma";
+import { UserRole } from "../../../generated/prisma/client";
 
 const router = Router();
 
@@ -38,5 +38,6 @@ router.post(
 );
 router.get("/", UserController.getAllUser);
 router.patch("/", UserController.userSoftDelete);
+router.get("/getUser", UserController.getUser);
 
 export const UserRoute = router;
