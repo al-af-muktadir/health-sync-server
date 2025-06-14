@@ -1,15 +1,21 @@
+// import {
+//   Prisma,
+//   PrismaClient,
+//   UserRole,
+//   UserStatus,
+// } from "../../../generated/prisma/client";
+import bcrypt from "bcrypt";
+import { searchableFields } from "./User.constant";
+import { pagination } from "../../../utils/Paginator";
+// import { prisma } from "../../../shared/Prisma";
+import { fileUploader } from "../../../shared/fileUploader";
 import {
   Prisma,
   PrismaClient,
   UserRole,
   UserStatus,
-} from "../../../generated/prisma/client";
-import bcrypt from "bcrypt";
-import { searchableFields } from "./User.constant";
-import { pagination } from "../../../utils/Paginator";
-import { prisma } from "../../../shared/Prisma";
-import { fileUploader } from "../../../shared/fileUploader";
-
+} from "../../../generated/prisma";
+const prisma = new PrismaClient();
 const createDoctorIntoDb = async (req: any) => {
   const file = req.file;
   console.log("req.body", req.body);

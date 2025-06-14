@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authServices = void 0;
 const client_1 = require("../../../generated/prisma/client");
 const jwtEncoder_1 = require("../../../shared/jwtEncoder");
-const Prisma_1 = require("../../../shared/Prisma");
+const Prisma_1 = __importDefault(require("../../../shared/Prisma"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const config_1 = __importDefault(require("../../../config"));
 const emailSender_1 = __importDefault(require("./emailSender"));
@@ -23,7 +23,7 @@ const ApiError_1 = __importDefault(require("../../errors/ApiError"));
 const http_status_codes_1 = require("http-status-codes");
 const loginUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     // const result=await prisma.
-    const userInfo = yield Prisma_1.prisma.user.findUniqueOrThrow({
+    const userInfo = yield Prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: userData.email,
         },
@@ -35,21 +35,21 @@ const loginUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     }
     let data = {};
     if (userInfo.role === client_1.UserRole.ADMIN) {
-        data = yield Prisma_1.prisma.admin.findUniqueOrThrow({
+        data = yield Prisma_1.default.admin.findUniqueOrThrow({
             where: {
                 email: userInfo.email,
             },
         });
     }
     else if (userInfo.role === client_1.UserRole.DOCTOR) {
-        data = yield Prisma_1.prisma.doctor.findUniqueOrThrow({
+        data = yield Prisma_1.default.doctor.findUniqueOrThrow({
             where: {
                 email: userInfo.email,
             },
         });
     }
     else if (userInfo.role === client_1.UserRole.PATIENT) {
-        data = yield Prisma_1.prisma.patient.findUniqueOrThrow({
+        data = yield Prisma_1.default.patient.findUniqueOrThrow({
             where: {
                 email: userInfo.email,
             },
@@ -78,7 +78,7 @@ const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     catch (err) {
         throw new Error("You are not Authorized");
     }
-    const userData = yield Prisma_1.prisma.user.findUniqueOrThrow({
+    const userData = yield Prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: decodedData.email,
             status: client_1.UserStatus.ACTIVE,
@@ -86,21 +86,21 @@ const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     });
     let data = {};
     if (userData.role === client_1.UserRole.ADMIN) {
-        data = yield Prisma_1.prisma.admin.findUniqueOrThrow({
+        data = yield Prisma_1.default.admin.findUniqueOrThrow({
             where: {
                 email: userData.email,
             },
         });
     }
     else if (userData.role === client_1.UserRole.DOCTOR) {
-        data = yield Prisma_1.prisma.doctor.findUniqueOrThrow({
+        data = yield Prisma_1.default.doctor.findUniqueOrThrow({
             where: {
                 email: userData.email,
             },
         });
     }
     else if (userData.role === client_1.UserRole.PATIENT) {
-        data = yield Prisma_1.prisma.patient.findUniqueOrThrow({
+        data = yield Prisma_1.default.patient.findUniqueOrThrow({
             where: {
                 email: userData.email,
             },
@@ -116,7 +116,7 @@ const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     return { accessToken, needPasswordChange: userData.needPasswordChange };
 });
 const changePassword = (userData, data) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield Prisma_1.prisma.user.findUniqueOrThrow({
+    const user = yield Prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: userData.email,
             status: client_1.UserStatus.ACTIVE,
@@ -127,7 +127,7 @@ const changePassword = (userData, data) => __awaiter(void 0, void 0, void 0, fun
         throw new Error("Password Doesnot Matched");
     }
     const hashedPassword = yield bcrypt_1.default.hash(data.newPassword, 12);
-    yield Prisma_1.prisma.user.update({
+    yield Prisma_1.default.user.update({
         where: {
             email: userData.email,
         },
@@ -142,7 +142,7 @@ const changePassword = (userData, data) => __awaiter(void 0, void 0, void 0, fun
 });
 const forgotPassword = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("payload", payload);
-    const userData = yield Prisma_1.prisma.user.findUniqueOrThrow({
+    const userData = yield Prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: payload.email,
             status: client_1.UserStatus.ACTIVE,
@@ -160,7 +160,7 @@ const forgotPassword = (payload) => __awaiter(void 0, void 0, void 0, function* 
        </div>`);
 });
 const resetPassword = (token, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    yield Prisma_1.prisma.user.findUniqueOrThrow({
+    yield Prisma_1.default.user.findUniqueOrThrow({
         where: {
             id: payload.id,
             status: client_1.UserStatus.ACTIVE,
@@ -171,7 +171,7 @@ const resetPassword = (token, payload) => __awaiter(void 0, void 0, void 0, func
         throw new ApiError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "You are not Authorized");
     }
     const hashedPassword = yield bcrypt_1.default.hash(payload.password, 12);
-    const resetPassword = yield Prisma_1.prisma.user.update({
+    const resetPassword = yield Prisma_1.default.user.update({
         where: {
             id: payload.id,
         },

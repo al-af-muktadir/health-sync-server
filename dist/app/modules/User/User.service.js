@@ -24,12 +24,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
-const client_1 = require("../../../generated/prisma/client");
+// import {
+//   Prisma,
+//   PrismaClient,
+//   UserRole,
+//   UserStatus,
+// } from "../../../generated/prisma/client";
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const User_constant_1 = require("./User.constant");
 const Paginator_1 = require("../../../utils/Paginator");
-const Prisma_1 = require("../../../shared/Prisma");
+// import { prisma } from "../../../shared/Prisma";
 const fileUploader_1 = require("../../../shared/fileUploader");
+const prisma_1 = require("../../../generated/prisma");
+const prisma = new prisma_1.PrismaClient();
 const createDoctorIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const file = req.file;
     console.log("req.body", req.body);
@@ -41,9 +48,9 @@ const createDoctorIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* 
     const userData = {
         email: req.body.doctor.email,
         password: hashedPassword,
-        role: client_1.UserRole.DOCTOR,
+        role: prisma_1.UserRole.DOCTOR,
     };
-    const result = yield Prisma_1.prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
         const createUserData = yield transactionClient.user.create({
             data: userData,
         });
@@ -67,9 +74,9 @@ const createPatientIntoDb = (req) => __awaiter(void 0, void 0, void 0, function*
     const userData = {
         email: req.body.patient.email,
         password: hashedPassword,
-        role: client_1.UserRole.PATIENT,
+        role: prisma_1.UserRole.PATIENT,
     };
-    const result = yield Prisma_1.prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
         const createUserData = yield transactionClient.user.create({
             data: userData,
         });
@@ -96,9 +103,9 @@ const createAdminIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* (
     const userData = {
         email: req.body.admin.email,
         password: hashedPassword,
-        role: client_1.UserRole.ADMIN,
+        role: prisma_1.UserRole.ADMIN,
     };
-    const result = yield Prisma_1.prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
         const createUserData = yield transactionClient.user.create({
             data: userData,
         });
@@ -157,7 +164,7 @@ const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, 
     //     }
     //   ]
     // }
-    const result = yield Prisma_1.prisma.admin.findMany({
+    const result = yield prisma.admin.findMany({
         where: whereCondition,
         skip,
         take: limit,
@@ -167,7 +174,7 @@ const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, 
             }
             : { createdAt: "desc" },
     });
-    const total = yield Prisma_1.prisma.admin.count({
+    const total = yield prisma.admin.count({
         where: whereCondition,
     });
     return {
@@ -180,7 +187,7 @@ const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, 
     };
 });
 const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield Prisma_1.prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
         const adminDelete = yield transactionClient.admin.update({
             where: {
                 id,
@@ -194,7 +201,7 @@ const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
                 email: adminDelete.email,
             },
             data: {
-                status: client_1.UserStatus.DELETED,
+                status: prisma_1.UserStatus.DELETED,
             },
         });
         return adminDelete;
@@ -203,24 +210,24 @@ const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const getUser = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let UserInformation;
-    if ((params.role = client_1.UserRole.ADMIN)) {
-        UserInformation = yield Prisma_1.prisma.admin.findUniqueOrThrow({
+    if ((params.role = prisma_1.UserRole.ADMIN)) {
+        UserInformation = yield prisma.admin.findUniqueOrThrow({
             where: {
                 email: params.email,
             },
         });
         return UserInformation;
     }
-    else if ((params.role = client_1.UserRole.DOCTOR)) {
-        UserInformation = yield Prisma_1.prisma.doctor.findUniqueOrThrow({
+    else if ((params.role = prisma_1.UserRole.DOCTOR)) {
+        UserInformation = yield prisma.doctor.findUniqueOrThrow({
             where: {
                 email: params.email,
             },
         });
         return UserInformation;
     }
-    else if ((params.role = client_1.UserRole.PATIENT)) {
-        UserInformation = yield Prisma_1.prisma.patient.findUniqueOrThrow({
+    else if ((params.role = prisma_1.UserRole.PATIENT)) {
+        UserInformation = yield prisma.patient.findUniqueOrThrow({
             where: {
                 email: params.email,
             },
