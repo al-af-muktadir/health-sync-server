@@ -26,6 +26,8 @@ model User{ //father
   updatedAt DateTime @updatedAt
 
   admin Admin? @relation("UserToAdmin")
+  doctor Doctor? @relation("UserToDoctor")
+  patient Patient?  @relation("UserToPatient")
 
 @@map("users")
 }
@@ -43,6 +45,47 @@ model Admin{ //child ---admin is subclass of User and its under the USer super c
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 @@map("admin")
+}
+
+model Doctor{
+  id String @id @default(uuid())
+  name String 
+  email String @unique
+  contactNumber String
+  address String
+  profilePhoto String?
+  registrationNumber String @unique()
+  experience Int @default(0)
+  gender Gender
+  appointmentFee Int 
+  qualification String
+  currentWorkingPlace String 
+  designation String
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation("UserToDoctor",fields:[email],references:[email])
+@@map("doctors")
+}
+
+model Patient{
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  contactNumber String
+  address String
+  profilePhoto String?
+  isDeleted Boolean @default(false)
+  createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+  
+  user User @relation("UserToPatient",fields:[email],references:[email])
+@@map("patients")
+}
+
+enum Gender{
+  MALE
+  FEMALE
 }
 
 

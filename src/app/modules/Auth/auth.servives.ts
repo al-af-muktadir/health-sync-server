@@ -18,6 +18,7 @@ const loginUser = async (userData: TUser) => {
       email: userData.email,
     },
   });
+  console.log("user", userInfo);
   const isCorrectPassword = bcrypt.compare(
     userInfo.password,
     userData.password
@@ -25,13 +26,14 @@ const loginUser = async (userData: TUser) => {
   if (!isCorrectPassword) {
     throw new Error("Password Is Incorrect");
   }
+
   const accessToken = jwtEncoded.generateToken(
-    userData,
+    userInfo,
     config.jwt_secret as string,
     config.jwt_expires_in as string
   );
   const refreshToken = jwtEncoded.generateToken(
-    userData,
+    userInfo,
     config.refresh_secret as string,
     config.refresh_expires_in as string
   );
@@ -109,7 +111,7 @@ const forgotPassword = async (payload: { email: string }) => {
   );
 
   const emailLink =
-    process.env.base_url + `?id=${userData.id}&token=${forgotPasswordToken}`;
+    config.base_url + `?id=${userData.id}&token=${forgotPasswordToken}`;
   await emailSender(
     userData.email,
     `

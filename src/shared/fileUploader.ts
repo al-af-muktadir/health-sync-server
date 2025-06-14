@@ -3,9 +3,15 @@ import path from "path";
 import { v2 as cloudinary } from "cloudinary";
 import config from "../config";
 import fs from "fs";
+const uploadsDir = path.join(process.cwd(), "uploads");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), "uploads"));
+    cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname);

@@ -4,7 +4,9 @@ import { sendResponse } from "../../../utils/sendResponse";
 import { authServices } from "./auth.servives";
 
 const loginUser = catchAsync(async (req, res) => {
+  console.log("hittingcontroller");
   const result = await authServices.loginUser(req.body);
+
   const { refreshToken } = result;
 
   res.cookie("refreshToken", refreshToken, { secure: false, httpOnly: true });

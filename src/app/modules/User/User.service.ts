@@ -10,6 +10,70 @@ import { pagination } from "../../../utils/Paginator";
 import { prisma } from "../../../shared/Prisma";
 import { fileUploader } from "../../../shared/fileUploader";
 
+const createDoctorIntoDb = async (req: any) => {
+  const file = req.file;
+  console.log("req.body", req.body);
+
+  if (file) {
+    const uploadToCloudinary = (await fileUploader.uploadToCloudinary(
+      file
+    )) as { secure_url?: string };
+    req.body.doctor.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  const hashedPassword = await bcrypt.hash(req.body.password, 12);
+  const userData = {
+    email: req.body.doctor.email,
+    password: hashedPassword,
+    role: UserRole.DOCTOR,
+  };
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const createUserData = await transactionClient.user.create({
+      data: userData,
+    });
+
+    const createDoctorData = await transactionClient.doctor.create({
+      data: req.body.doctor,
+    });
+    console.log("createDoctorData", createDoctorData);
+    return createDoctorData;
+  });
+  console.log("result", result);
+  return result;
+};
+const createPatientIntoDb = async (req: any) => {
+  const file = req.file;
+  console.log("req.body", req.body);
+
+  if (file) {
+    const uploadToCloudinary = (await fileUploader.uploadToCloudinary(
+      file
+    )) as { secure_url?: string };
+    req.body.patient.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  const hashedPassword = await bcrypt.hash(req.body.password, 12);
+  const userData = {
+    email: req.body.patient.email,
+    password: hashedPassword,
+    role: UserRole.PATIENT,
+  };
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const createUserData = await transactionClient.user.create({
+      data: userData,
+    });
+
+    const createPatientData = await transactionClient.patient.create({
+      data: req.body.patient,
+    });
+    console.log("createPatientData", createPatientData);
+    return createPatientData;
+  });
+  console.log("result", result);
+  return result;
+};
 const createAdminIntoDb = async (req: any) => {
   const file = req.file;
   // if (file) {
@@ -145,8 +209,37 @@ const deleteUser = async (id: any) => {
 
   return result;
 };
+
+const getUser = async (params: any) => {
+  let UserInformation;
+  if ((params.role = UserRole.ADMIN)) {
+    UserInformation = await prisma.admin.findUniqueOrThrow({
+      where: {
+        email: params.email,
+      },
+    });
+    return UserInformation;
+  } else if ((params.role = UserRole.DOCTOR)) {
+    UserInformation = await prisma.doctor.findUniqueOrThrow({
+      where: {
+        email: params.email,
+      },
+    });
+    return UserInformation;
+  } else if ((params.role = UserRole.PATIENT)) {
+    UserInformation = await prisma.patient.findUniqueOrThrow({
+      where: {
+        email: params.email,
+      },
+    });
+    return UserInformation;
+  }
+};
 export const UserServices = {
   createAdminIntoDb,
   getAllUserFromDb,
   deleteUser,
+  getUser,
+  createDoctorIntoDb,
+  createPatientIntoDb,
 };
