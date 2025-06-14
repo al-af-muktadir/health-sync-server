@@ -1,5 +1,5 @@
 import { Secret } from "jsonwebtoken";
-import { UserStatus } from "../../../generated/prisma";
+import { UserRole, UserStatus } from "../../../generated/prisma";
 import { jwtEncoded } from "../../../shared/jwtEncoder";
 import { prisma } from "../../../shared/Prisma";
 import bcrypt from "bcrypt";
@@ -18,7 +18,7 @@ const loginUser = async (userData: TUser) => {
       email: userData.email,
     },
   });
-  console.log("user", userInfo);
+  // console.log("user", userInfo);
   const isCorrectPassword = bcrypt.compare(
     userInfo.password,
     userData.password
@@ -26,14 +26,41 @@ const loginUser = async (userData: TUser) => {
   if (!isCorrectPassword) {
     throw new Error("Password Is Incorrect");
   }
+  let data = {};
 
+  if (userInfo.role === UserRole.ADMIN) {
+    data = await prisma.admin.findUniqueOrThrow({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  } else if (userInfo.role === UserRole.DOCTOR) {
+    data = await prisma.doctor.findUniqueOrThrow({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  } else if (userInfo.role === UserRole.PATIENT) {
+    data = await prisma.patient.findUniqueOrThrow({
+      where: {
+        email: userInfo.email,
+      },
+    });
+  }
+  const modifiedData = {
+    email: userInfo.email,
+    password: userInfo.password,
+    profilePhoto: (data as any)?.profilePhoto,
+    name: (data as any)?.name,
+  };
+  console.log(modifiedData);
   const accessToken = jwtEncoded.generateToken(
-    userInfo,
+    modifiedData,
     config.jwt_secret as string,
     config.jwt_expires_in as string
   );
   const refreshToken = jwtEncoded.generateToken(
-    userInfo,
+    modifiedData,
     config.refresh_secret as string,
     config.refresh_expires_in as string
   );
@@ -58,8 +85,36 @@ const refreshToken = async (token: string) => {
       status: UserStatus.ACTIVE,
     },
   });
+
+  let data = {};
+
+  if (userData.role === UserRole.ADMIN) {
+    data = await prisma.admin.findUniqueOrThrow({
+      where: {
+        email: userData.email,
+      },
+    });
+  } else if (userData.role === UserRole.DOCTOR) {
+    data = await prisma.doctor.findUniqueOrThrow({
+      where: {
+        email: userData.email,
+      },
+    });
+  } else if (userData.role === UserRole.PATIENT) {
+    data = await prisma.patient.findUniqueOrThrow({
+      where: {
+        email: userData.email,
+      },
+    });
+  }
+  const modifiedData = {
+    email: userData.email,
+    password: userData.password,
+    profilePhoto: (data as any)?.profilePhoto,
+    name: (data as any)?.name,
+  };
   const accessToken = jwtEncoded.generateToken(
-    { email: userData.email, role: userData.role },
+    modifiedData,
     config.jwt_secret as Secret,
     config.jwt_expires_in as string
   );
