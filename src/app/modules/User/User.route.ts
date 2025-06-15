@@ -13,7 +13,7 @@ const router = Router();
 router.post(
   "/create-admin",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  fileUploader.upload.single("file"),
+  fileUploader.upload,
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createAdmin.parse(JSON.parse(req.body.data));
     return UserController.createAdmin(req, res, next);
@@ -23,7 +23,7 @@ router.post(
 router.post(
   "/create-doctor",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  fileUploader.upload.single("file"),
+  fileUploader.upload,
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createDoctor.parse(JSON.parse(req.body.data));
     return UserController.createDoctor(req, res, next);
@@ -31,7 +31,7 @@ router.post(
 );
 router.post(
   "/create-patient",
-  fileUploader.upload.single("file"),
+  fileUploader.upload,
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createPatient.parse(JSON.parse(req.body.data));
     return UserController.createPatient(req, res, next);

@@ -8,23 +8,23 @@ import bcrypt from "bcrypt";
 import { searchableFields } from "./User.constant";
 import { pagination } from "../../../utils/Paginator";
 // import { prisma } from "../../../shared/Prisma";
-import { fileUploader } from "../../../shared/fileUploader";
+// import { fileUploader } from "../../../shared/fileUploader";
 import {
   Prisma,
   PrismaClient,
   UserRole,
   UserStatus,
 } from "../../../generated/prisma";
+import { fileUploader } from "../../../shared/fileUploader";
+// import { uploadToCloudinary } from "../../../shared/fileUploader";
 const prisma = new PrismaClient();
 const createDoctorIntoDb = async (req: any) => {
   const file = req.file;
   console.log("req.body", req.body);
 
-  if (file) {
-    const uploadToCloudinary = (await fileUploader.uploadToCloudinary(
-      file
-    )) as { secure_url?: string };
-    req.body.doctor.profilePhoto = uploadToCloudinary?.secure_url;
+  if (req.file) {
+    const { secure_url } = await fileUploader.uploadToCloudinary(req.file);
+    req.body.admin.profilePhoto = secure_url;
   }
 
   const hashedPassword = await bcrypt.hash(req.body.password, 12);
