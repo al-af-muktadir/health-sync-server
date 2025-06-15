@@ -1,5 +1,5 @@
 import { Secret } from "jsonwebtoken";
-import { UserRole, UserStatus } from "../../../generated/prisma/client";
+
 import { jwtEncoded } from "../../../shared/jwtEncoder";
 import prisma from "../../../shared/Prisma";
 import bcrypt from "bcrypt";
@@ -7,6 +7,7 @@ import config from "../../../config";
 import emailSender from "./emailSender";
 import APiError from "../../errors/ApiError";
 import { StatusCodes } from "http-status-codes";
+import { UserRole, UserStatus } from "@prisma/client";
 type TUser = {
   email: string;
   password: string;

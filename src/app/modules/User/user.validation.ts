@@ -1,5 +1,5 @@
+import { Gender } from "@prisma/client";
 import { z } from "zod";
-import { Gender } from "../../../generated/prisma/client";
 
 const createAdmin = z.object({
   password: z.string({ required_error: "Password is required" }),
