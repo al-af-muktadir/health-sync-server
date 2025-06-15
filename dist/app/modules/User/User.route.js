@@ -9,15 +9,15 @@ const auth_1 = require("../../middlewares/auth");
 const prisma_1 = require("../../../generated/prisma");
 // import { UserRole } from "../../../generated/prisma/client";
 const router = (0, express_1.Router)();
-router.post("/create-admin", (0, auth_1.auth)(prisma_1.UserRole.SUPER_ADMIN, prisma_1.UserRole.ADMIN), fileUploader_1.fileUploader.upload.single("file"), (req, res, next) => {
+router.post("/create-admin", (0, auth_1.auth)(prisma_1.UserRole.SUPER_ADMIN, prisma_1.UserRole.ADMIN), fileUploader_1.fileUploader.upload, (req, res, next) => {
     req.body = user_validation_1.userValidation.createAdmin.parse(JSON.parse(req.body.data));
     return User_controller_1.UserController.createAdmin(req, res, next);
 });
-router.post("/create-doctor", (0, auth_1.auth)(prisma_1.UserRole.SUPER_ADMIN, prisma_1.UserRole.ADMIN), fileUploader_1.fileUploader.upload.single("file"), (req, res, next) => {
+router.post("/create-doctor", (0, auth_1.auth)(prisma_1.UserRole.SUPER_ADMIN, prisma_1.UserRole.ADMIN), fileUploader_1.fileUploader.upload, (req, res, next) => {
     req.body = user_validation_1.userValidation.createDoctor.parse(JSON.parse(req.body.data));
     return User_controller_1.UserController.createDoctor(req, res, next);
 });
-router.post("/create-patient", fileUploader_1.fileUploader.upload.single("file"), (req, res, next) => {
+router.post("/create-patient", fileUploader_1.fileUploader.upload, (req, res, next) => {
     req.body = user_validation_1.userValidation.createPatient.parse(JSON.parse(req.body.data));
     return User_controller_1.UserController.createPatient(req, res, next);
 });

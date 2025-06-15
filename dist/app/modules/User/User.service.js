@@ -34,15 +34,17 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const User_constant_1 = require("./User.constant");
 const Paginator_1 = require("../../../utils/Paginator");
 // import { prisma } from "../../../shared/Prisma";
-const fileUploader_1 = require("../../../shared/fileUploader");
+// import { fileUploader } from "../../../shared/fileUploader";
 const prisma_1 = require("../../../generated/prisma");
+const fileUploader_1 = require("../../../shared/fileUploader");
+// import { uploadToCloudinary } from "../../../shared/fileUploader";
 const prisma = new prisma_1.PrismaClient();
 const createDoctorIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const file = req.file;
     console.log("req.body", req.body);
-    if (file) {
-        const uploadToCloudinary = (yield fileUploader_1.fileUploader.uploadToCloudinary(file));
-        req.body.doctor.profilePhoto = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
+    if (req.file) {
+        const { secure_url } = yield fileUploader_1.fileUploader.uploadToCloudinary(req.file);
+        req.body.admin.profilePhoto = secure_url;
     }
     const hashedPassword = yield bcrypt_1.default.hash(req.body.password, 12);
     const userData = {

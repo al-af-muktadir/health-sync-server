@@ -14,39 +14,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fileUploader = void 0;
 const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
 const cloudinary_1 = require("cloudinary");
+const streamifier_1 = __importDefault(require("streamifier"));
 const config_1 = __importDefault(require("../config"));
-const fs_1 = __importDefault(require("fs"));
-const uploadsDir = path_1.default.join(process.cwd(), "uploads");
-if (!fs_1.default.existsSync(uploadsDir)) {
-    fs_1.default.mkdirSync(uploadsDir);
-}
-const storage = multer_1.default.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname);
-    },
-});
-const upload = (0, multer_1.default)({ storage: storage });
+//
+// 1) Memory‑only storage ── nothing touches the filesystem
+//
+const storage = multer_1.default.memoryStorage();
+//
+// 2) Multer middleware: single file ≤ 4 MB named “profilePhoto”
+//    (raise/lower the limit or field name as you like)
+//
+const upload = (0, multer_1.default)({
+    storage,
+    limits: { fileSize: 4 * 1024 * 1024 }, // 4 MB
+}).single("file");
+//
+// 3) Cloudinary credentials
+//
 cloudinary_1.v2.config({
     cloud_name: config_1.default.cloud_name,
     api_key: config_1.default.api_key,
     api_secret: config_1.default.api_secret,
 });
+//
+// 4) Stream buffer → Cloudinary (no tmp file)
+//
 const uploadToCloudinary = (file) => __awaiter(void 0, void 0, void 0, function* () {
     return new Promise((resolve, reject) => {
-        cloudinary_1.v2.uploader.upload(file.path, { public_id: file.filename }, (error, result) => {
-            fs_1.default.unlinkSync(file.path);
-            if (error) {
-                reject(error);
-            }
-            else {
-                resolve(result);
-            }
+        const publicId = `${Date.now()}-${file.originalname.split(".")[0]}`;
+        const uploadStream = cloudinary_1.v2.uploader.upload_stream({ public_id: publicId, resource_type: "image" }, (error, result) => {
+            if (error)
+                return reject(error);
+            resolve(result);
         });
+        // push the in‑memory buffer straight into Cloudinary
+        streamifier_1.default.createReadStream(file.buffer).pipe(uploadStream);
     });
 });
 exports.fileUploader = {
