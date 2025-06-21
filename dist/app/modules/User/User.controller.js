@@ -48,8 +48,40 @@ const createPatient = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
         data: result,
     });
 }));
-const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const filterThings = (0, pick_1.pick)(req.query, User_constant_1.QueriesFields);
+    const OtherOptions = (0, pick_1.pick)(req.query, [
+        "sortBy",
+        "sortOrder",
+        "page",
+        "limit",
+    ]);
+    const result = yield User_service_1.UserServices.getAllAdminFromDb(filterThings, OtherOptions);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        message: "All Admins Retrieved Successfully",
+        data: result.data,
+        meta: result.meta,
+    });
+}));
+const userSoftDelete = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield User_service_1.UserServices.deleteUser(req.params.id);
+    (0, sendResponse_1.sendResponse)(res, {
+        data: result,
+        message: "User Deleted Succesfully",
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+}));
+const getUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield User_service_1.UserServices.getUser(req.user);
+    (0, sendResponse_1.sendResponse)(res, {
+        data: result,
+        message: "User Retrieved Succesfully",
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+}));
+const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const filterThings = (0, pick_1.pick)(req.query, User_constant_1.UserFilterableFields);
     const OtherOptions = (0, pick_1.pick)(req.query, [
         "sortBy",
         "sortOrder",
@@ -64,27 +96,33 @@ const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         meta: result.meta,
     });
 }));
-const userSoftDelete = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield User_service_1.UserServices.deleteUser(req.params.id);
+const updateStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // console.log(req.params, req.body);
+    const result = yield User_service_1.UserServices.updateStatus(req.params, req.body);
     (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        message: "All Users Retrieved Successfully",
         data: result,
-        message: "User Deleted Succesfully",
-        statusCode: http_status_codes_1.StatusCodes.OK,
     });
 }));
-const getUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield User_service_1.UserServices.getUser(req.params);
+const updateMyProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    // console.log(req.params, req.body);
+    const result = yield User_service_1.UserServices.updateMyProfile(user, req);
     (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        message: "Profile Updated Successfully",
         data: result,
-        message: "User Retrieved Succesfully",
-        statusCode: http_status_codes_1.StatusCodes.OK,
     });
 }));
 exports.UserController = {
     createAdmin,
-    getAllUser,
+    getAllAdmin,
     userSoftDelete,
+    updateMyProfile,
     createDoctor,
     getUser,
     createPatient,
+    getAllUser,
+    updateStatus,
 };

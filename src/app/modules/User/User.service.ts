@@ -1,9 +1,10 @@
 import bcrypt from "bcrypt";
-import { searchableFields } from "./User.constant";
+import { searchableFields, UserSearchableFields } from "./User.constant";
 import { pagination } from "../../../utils/Paginator";
 
 import { fileUploader } from "../../../shared/fileUploader";
 import { Prisma, PrismaClient, UserRole, UserStatus } from "@prisma/client";
+import { Request } from "express";
 // import { uploadToCloudinary } from "../../../shared/fileUploader";
 const prisma = new PrismaClient();
 const createDoctorIntoDb = async (req: any) => {
@@ -103,7 +104,7 @@ const createAdminIntoDb = async (req: any) => {
   return result;
 };
 
-const getAllUserFromDb = async (params: any, options: any) => {
+const getAllAdminFromDb = async (params: any, options: any) => {
   const { searchTerm, ...restData } = params;
   const { page, limit, sortBy, sortOrder, skip } = pagination(options);
   console.log("params", restData);
@@ -178,6 +179,88 @@ const getAllUserFromDb = async (params: any, options: any) => {
     data: result,
   };
 };
+const getAllUserFromDb = async (params: any, options: any) => {
+  const { searchTerm, ...restData } = params;
+  const { page, limit, sortBy, sortOrder, skip } = pagination(options);
+  console.log("params", restData);
+  const andCondition: Prisma.UserWhereInput[] = [];
+
+  const searchFields = UserSearchableFields;
+  if (params.searchTerm) {
+    andCondition.push({
+      OR: searchFields.map((field: string) => ({
+        //where:{or:[{name:{contains,mode}},{},{}]}//snp
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+  if (Object.keys(restData).length > 0) {
+    andCondition.push({
+      AND: Object.keys(restData).map((key) => ({
+        [key]: {
+          equals: restData[key],
+        },
+      })),
+    });
+  }
+
+  // console.log(andCondition);
+
+  const whereCondition: Prisma.UserWhereInput =
+    andCondition.length > 0 ? { AND: andCondition } : {};
+  console.log(whereCondition);
+  //  {
+  //   AND: [
+  //     {
+  //       OR: [
+  //         { name: { contains: "john", mode: "insensitive" } },
+  //         { email: { contains: "john", mode: "insensitive" } }
+  //       ]
+  //     },
+  //     {
+  //       AND: [
+  //         { isActive: { equals: true } },
+  //         { department: { equals: "sales" } }
+  //       ]
+  //     }
+  //   ]
+  // }
+  const result = await prisma.user.findMany({
+    where: whereCondition,
+    skip,
+    take: limit,
+    orderBy:
+      sortBy && sortOrder
+        ? {
+            [sortBy]: sortOrder,
+          }
+        : { createdAt: "desc" },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      status: true,
+      needPasswordChange: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  const total = await prisma.user.count({
+    where: whereCondition,
+  });
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
 
 const deleteUser = async (id: any) => {
   const result = await prisma.$transaction(async (transactionClient) => {
@@ -229,11 +312,78 @@ const getUser = async (params: any) => {
     return UserInformation;
   }
 };
+
+const updateStatus = async (email: any, data: any) => {
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      email: email,
+    },
+  });
+  const updateStatus = await prisma.user.update({
+    where: {
+      email: email,
+    },
+    data: {
+      ...data,
+    },
+  });
+};
+
+const updateMyProfile = async (user: any, req: Request) => {
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+  const file = req.file;
+
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    if (req && req.body) {
+      req.body.profilePhoto = uploadToCloudinary.secure_url;
+    }
+  }
+  let updateInfo;
+  if (user.role === UserRole.SUPER_ADMIN) {
+    updateInfo = await prisma.admin.update({
+      where: {
+        email: user.email,
+      },
+      data: req.body,
+    });
+  } else if (user.role === UserRole.ADMIN) {
+    updateInfo = await prisma.admin.update({
+      where: {
+        email: user.email,
+      },
+      data: req.body,
+    });
+  } else if (user.role === UserRole.DOCTOR) {
+    updateInfo = await prisma.doctor.update({
+      where: {
+        email: user.email,
+      },
+      data: req.body,
+    });
+  } else if (user.role === UserRole.PATIENT) {
+    updateInfo = await prisma.patient.update({
+      where: {
+        email: user.email,
+      },
+      data: req.body,
+    });
+  }
+  return updateInfo;
+};
 export const UserServices = {
   createAdminIntoDb,
-  getAllUserFromDb,
+  getAllAdminFromDb,
   deleteUser,
   getUser,
+  updateStatus,
+  getAllUserFromDb,
   createDoctorIntoDb,
   createPatientIntoDb,
+  updateMyProfile,
 };

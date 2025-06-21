@@ -8,6 +8,14 @@ import { auth } from "../../middlewares/auth";
 import { UserRole } from "@prisma/client";
 
 const router = Router();
+router.get("/all-admin", UserController.getAllAdmin);
+router.get(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  UserController.getAllUser
+);
+router.get("/get-user", UserController.getUser);
+router.patch("/", UserController.userSoftDelete);
 
 router.post(
   "/create-admin",
@@ -28,6 +36,7 @@ router.post(
     return UserController.createDoctor(req, res, next);
   }
 );
+
 router.post(
   "/create-patient",
   fileUploader.upload,
@@ -36,8 +45,20 @@ router.post(
     return UserController.createPatient(req, res, next);
   }
 );
-router.get("/", UserController.getAllUser);
-router.patch("/", UserController.userSoftDelete);
-router.get("/getUser", UserController.getUser);
+
+router.patch(
+  "/update-status/:email",
+  // auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  UserController.updateStatus
+);
+
+router.patch(
+  "/update-my-profile",
+  fileUploader.upload,
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    return UserController.updateMyProfile(req, res, next);
+  }
+);
 
 export const UserRoute = router;

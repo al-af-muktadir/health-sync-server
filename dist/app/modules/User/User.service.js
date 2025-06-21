@@ -110,7 +110,7 @@ const createAdminIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* (
     }));
     return result;
 });
-const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllAdminFromDb = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { searchTerm } = params, restData = __rest(params, ["searchTerm"]);
     const { page, limit, sortBy, sortOrder, skip } = (0, Paginator_1.pagination)(options);
     console.log("params", restData);
@@ -180,6 +180,82 @@ const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, 
         data: result,
     };
 });
+const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { searchTerm } = params, restData = __rest(params, ["searchTerm"]);
+    const { page, limit, sortBy, sortOrder, skip } = (0, Paginator_1.pagination)(options);
+    console.log("params", restData);
+    const andCondition = [];
+    const searchFields = User_constant_1.UserSearchableFields;
+    if (params.searchTerm) {
+        andCondition.push({
+            OR: searchFields.map((field) => ({
+                //where:{or:[{name:{contains,mode}},{},{}]}//snp
+                [field]: {
+                    contains: params.searchTerm,
+                    mode: "insensitive",
+                },
+            })),
+        });
+    }
+    if (Object.keys(restData).length > 0) {
+        andCondition.push({
+            AND: Object.keys(restData).map((key) => ({
+                [key]: {
+                    equals: restData[key],
+                },
+            })),
+        });
+    }
+    // console.log(andCondition);
+    const whereCondition = andCondition.length > 0 ? { AND: andCondition } : {};
+    console.log(whereCondition);
+    //  {
+    //   AND: [
+    //     {
+    //       OR: [
+    //         { name: { contains: "john", mode: "insensitive" } },
+    //         { email: { contains: "john", mode: "insensitive" } }
+    //       ]
+    //     },
+    //     {
+    //       AND: [
+    //         { isActive: { equals: true } },
+    //         { department: { equals: "sales" } }
+    //       ]
+    //     }
+    //   ]
+    // }
+    const result = yield prisma.user.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        orderBy: sortBy && sortOrder
+            ? {
+                [sortBy]: sortOrder,
+            }
+            : { createdAt: "desc" },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            status: true,
+            needPasswordChange: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+    const total = yield prisma.user.count({
+        where: whereCondition,
+    });
+    return {
+        meta: {
+            page,
+            limit,
+            total,
+        },
+        data: result,
+    };
+});
 const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield prisma.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
         const adminDelete = yield transactionClient.admin.update({
@@ -229,11 +305,76 @@ const getUser = (params) => __awaiter(void 0, void 0, void 0, function* () {
         return UserInformation;
     }
 });
+const updateStatus = (email, data) => __awaiter(void 0, void 0, void 0, function* () {
+    yield prisma.user.findUniqueOrThrow({
+        where: {
+            email: email,
+        },
+    });
+    const updateStatus = yield prisma.user.update({
+        where: {
+            email: email,
+        },
+        data: Object.assign({}, data),
+    });
+});
+const updateMyProfile = (user, req) => __awaiter(void 0, void 0, void 0, function* () {
+    yield prisma.user.findUniqueOrThrow({
+        where: {
+            email: user.email,
+            status: client_1.UserStatus.ACTIVE,
+        },
+    });
+    const file = req.file;
+    if (file) {
+        const uploadToCloudinary = yield fileUploader_1.fileUploader.uploadToCloudinary(file);
+        if (req && req.body) {
+            req.body.profilePhoto = uploadToCloudinary.secure_url;
+        }
+    }
+    let updateInfo;
+    if (user.role === client_1.UserRole.SUPER_ADMIN) {
+        updateInfo = yield prisma.admin.update({
+            where: {
+                email: user.email,
+            },
+            data: req.body,
+        });
+    }
+    else if (user.role === client_1.UserRole.ADMIN) {
+        updateInfo = yield prisma.admin.update({
+            where: {
+                email: user.email,
+            },
+            data: req.body,
+        });
+    }
+    else if (user.role === client_1.UserRole.DOCTOR) {
+        updateInfo = yield prisma.doctor.update({
+            where: {
+                email: user.email,
+            },
+            data: req.body,
+        });
+    }
+    else if (user.role === client_1.UserRole.PATIENT) {
+        updateInfo = yield prisma.patient.update({
+            where: {
+                email: user.email,
+            },
+            data: req.body,
+        });
+    }
+    return updateInfo;
+});
 exports.UserServices = {
     createAdminIntoDb,
-    getAllUserFromDb,
+    getAllAdminFromDb,
     deleteUser,
     getUser,
+    updateStatus,
+    getAllUserFromDb,
     createDoctorIntoDb,
     createPatientIntoDb,
+    updateMyProfile,
 };

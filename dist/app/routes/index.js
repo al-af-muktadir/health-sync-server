@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const User_route_1 = require("../modules/User/User.route");
 const auth_route_1 = require("../modules/Auth/auth.route");
+const doctor_route_1 = require("../modules/Doctor/doctor.route");
+const patient_route_1 = require("../modules/Patient/patient.route");
 const router = express_1.default.Router();
 const moduleRoutes = [
     {
@@ -15,6 +17,18 @@ const moduleRoutes = [
     {
         path: "/auth",
         route: auth_route_1.authRoute,
+    },
+    {
+        path: "/specialties",
+        route: auth_route_1.authRoute,
+    },
+    {
+        path: "/doctor",
+        route: doctor_route_1.docRoute,
+    },
+    {
+        path: "/patient",
+        route: patient_route_1.PatientRoute,
     },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
