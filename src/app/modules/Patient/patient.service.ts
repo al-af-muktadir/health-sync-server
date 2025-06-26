@@ -92,11 +92,85 @@ const getById = async (id: any) => {
 };
 
 const updateIntoDb = async (id: any, data: any) => {
-  const result = await prisma.patient.update({
+  const { patientHealthData, medicalReports, ...restData } = data;
+  await prisma.patient.findUniqueOrThrow({
     where: {
       id,
     },
-    data: data,
+  });
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const updateData = await transactionClient.patient.update({
+      where: {
+        id,
+      },
+      data: restData,
+      include: {
+        patient_health_data: true,
+        medical_report: true,
+      },
+    });
+    if (patientHealthData) {
+      const healthData = await transactionClient.patientHealthData.upsert({
+        where: {
+          patientId: id,
+        },
+        update: patientHealthData,
+        create: {
+          ...patientHealthData,
+          patientId: id,
+        },
+      });
+    }
+    if (medicalReports) {
+      const medicalReport = await transactionClient.medicalReport.create({
+        data: {
+          ...medicalReports,
+          patientId: id,
+        },
+      });
+    }
+  });
+  const responseData = await prisma.patient.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      patient_health_data: true,
+      medical_report: true,
+    },
+  });
+
+  return responseData;
+};
+
+const deletePatient = async (id: any) => {
+  const user = await prisma.patient.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+  const result = await prisma.$transaction(async (TC) => {
+    TC.patientHealthData.delete({
+      where: {
+        patientId: id,
+      },
+    });
+    TC.medicalReport.deleteMany({
+      where: {
+        patientId: id,
+      },
+    });
+    await TC.patient.delete({
+      where: {
+        id: id,
+      },
+    });
+    await TC.user.delete({
+      where: {
+        email: user.email,
+      },
+    });
   });
   return result;
 };
@@ -104,4 +178,5 @@ export const patientService = {
   getAllPatientFromDb,
   getById,
   updateIntoDb,
+  deletePatient,
 };
