@@ -4,7 +4,7 @@ import { sendResponse } from "../../../utils/sendResponse";
 import { authServices } from "./auth.servives";
 
 const loginUser = catchAsync(async (req, res) => {
-  console.log("hittingcontroller");
+  // console.log("hittingcontroller");
   const result = await authServices.loginUser(req.body);
 
   const { refreshToken } = result;
@@ -39,7 +39,7 @@ const changePassword = catchAsync(async (req, res) => {
   });
 });
 const forgotPassword = catchAsync(async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const result = await authServices.forgotPassword(req.body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -49,7 +49,7 @@ const forgotPassword = catchAsync(async (req, res) => {
 });
 const resetPassword = catchAsync(async (req, res) => {
   const token = req.headers.authorization || "";
-  console.log(req.body);
+  // console.log(req.body);
   const result = await authServices.resetPassword(token, req.body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,

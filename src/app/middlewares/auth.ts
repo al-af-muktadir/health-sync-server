@@ -18,9 +18,11 @@ export const auth = (...roles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization;
+
       // console.log("Token:", token);
       if (!token) {
         throw new APiError(StatusCodes.UNAUTHORIZED, "You are not Authorized");
+        // console.log("No token provided");
       }
       const verifiedUser = jwtEncoded.verifyToken(
         token,
@@ -28,6 +30,7 @@ export const auth = (...roles: string[]) => {
       );
 
       req.user = verifiedUser;
+      // console.log("User:", verifiedUser);
       // console.log("Verified User:", verifiedUser);
       if (roles.length && !roles.includes(verifiedUser.role)) {
         throw new APiError(StatusCodes.UNAUTHORIZED, "You are Unauthorized");

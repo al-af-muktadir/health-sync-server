@@ -6,7 +6,7 @@ import { patientSearchableFields } from "./patient.constant";
 const getAllPatientFromDb = async (params: any, options: any) => {
   const { searchTerm, ...restData } = params;
   const { page, limit, sortBy, sortOrder, skip } = pagination(options);
-  console.log("params", restData);
+  // console.log("params", restData);
   const andCondition: Prisma.PatientWhereInput[] = [];
 
   const searchFields = patientSearchableFields;
@@ -37,7 +37,7 @@ const getAllPatientFromDb = async (params: any, options: any) => {
   // console.log(andCondition);
 
   const whereCondition: Prisma.PatientWhereInput = { AND: andCondition };
-  console.log(whereCondition);
+  // console.log(whereCondition);
   //  {
   //   AND: [
   //     {

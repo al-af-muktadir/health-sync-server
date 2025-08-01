@@ -9,14 +9,17 @@ import { Request } from "express";
 const prisma = new PrismaClient();
 const createDoctorIntoDb = async (req: any) => {
   const file = req.file;
-  console.log("req.body", req.body);
+  console.log("req.body in service", req.body.doctor);
 
-  if (req.file) {
-    const { secure_url } = await fileUploader.uploadToCloudinary(req.file);
-    req.body.admin.profilePhoto = secure_url;
+  if (file) {
+    const uploadToCloudinary = (await fileUploader.uploadToCloudinary(
+      file
+    )) as { secure_url?: string };
+    req.body.doctor.profilePhoto = uploadToCloudinary?.secure_url;
   }
 
   const hashedPassword = await bcrypt.hash(req.body.password, 12);
+  console.log("hashedPassword", hashedPassword);
   const userData = {
     email: req.body.doctor.email,
     password: hashedPassword,
@@ -31,15 +34,15 @@ const createDoctorIntoDb = async (req: any) => {
     const createDoctorData = await transactionClient.doctor.create({
       data: req.body.doctor,
     });
-    console.log("createDoctorData", createDoctorData);
+
     return createDoctorData;
   });
   console.log("result", result);
   return result;
 };
 const createPatientIntoDb = async (req: any) => {
-  const file = req.file;
-  console.log("req.body", req.body);
+  const file = req?.file;
+  console.log("req.file", file);
 
   if (file) {
     const uploadToCloudinary = (await fileUploader.uploadToCloudinary(
@@ -63,10 +66,10 @@ const createPatientIntoDb = async (req: any) => {
     const createPatientData = await transactionClient.patient.create({
       data: req.body.patient,
     });
-    console.log("createPatientData", createPatientData);
+    // console.log("createPatientData", createPatientData);
     return createPatientData;
   });
-  console.log("result", result);
+  // ("console.logresult", result);
   return result;
 };
 const createAdminIntoDb = async (req: any) => {
@@ -107,7 +110,7 @@ const createAdminIntoDb = async (req: any) => {
 const getAllAdminFromDb = async (params: any, options: any) => {
   const { searchTerm, ...restData } = params;
   const { page, limit, sortBy, sortOrder, skip } = pagination(options);
-  console.log("params", restData);
+  // console.log("params", restData);
   const andCondition: Prisma.AdminWhereInput[] = [];
 
   const searchFields = searchableFields;
@@ -211,7 +214,7 @@ const getAllUserFromDb = async (params: any, options: any) => {
 
   const whereCondition: Prisma.UserWhereInput =
     andCondition.length > 0 ? { AND: andCondition } : {};
-  console.log(whereCondition);
+  // console.log(wconsole.loghereCondition);
   //  {
   //   AND: [
   //     {
@@ -289,21 +292,22 @@ const deleteUser = async (id: any) => {
 
 const getUser = async (params: any) => {
   let UserInformation;
-  if ((params.role = UserRole.ADMIN)) {
+  if (params.role === "ADMIN") {
     UserInformation = await prisma.admin.findUniqueOrThrow({
       where: {
         email: params.email,
       },
     });
     return UserInformation;
-  } else if ((params.role = UserRole.DOCTOR)) {
+  } else if (params.role === "DOCTOR") {
     UserInformation = await prisma.doctor.findUniqueOrThrow({
       where: {
         email: params.email,
       },
     });
     return UserInformation;
-  } else if ((params.role = UserRole.PATIENT)) {
+  } else if (params.role === "PATIENT") {
+    console.log("i am user");
     UserInformation = await prisma.patient.findUniqueOrThrow({
       where: {
         email: params.email,

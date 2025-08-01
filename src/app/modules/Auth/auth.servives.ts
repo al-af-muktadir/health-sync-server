@@ -52,9 +52,10 @@ const loginUser = async (userData: TUser) => {
     email: userInfo.email,
     password: userInfo.password,
     profilePhoto: (data as any)?.profilePhoto,
+    role: userInfo.role,
     name: (data as any)?.name,
   };
-  console.log(modifiedData);
+  // console.log(modifiedData);
   const accessToken = jwtEncoded.generateToken(
     modifiedData,
     config.jwt_secret as string,
@@ -152,7 +153,7 @@ const changePassword = async (
 };
 
 const forgotPassword = async (payload: { email: string }) => {
-  console.log("payload", payload);
+  // console.log("payload", payload);
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,

@@ -39,10 +39,12 @@ const insertIntoDb = async (data: any) => {
           endDateTime: scheduleData.endDateTime,
         },
       });
-      const result = await prisma.schedule.create({
-        data: scheduleData as any,
-      });
-      schedules.push(result);
+      if (!existingSchedule) {
+        const result = await prisma.schedule.create({
+          data: scheduleData as any,
+        });
+        schedules.push(result);
+      }
       startDateTime.setMinutes(startDateTime.getMinutes() + 30);
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -51,12 +53,28 @@ const insertIntoDb = async (data: any) => {
   return schedules;
 };
 
-const getAllFromDb = async (params: any, options: any) => {
+const getAllFromDb = async (params: any, options: any, user: any) => {
   const { startDate, endDate, ...restData } = params;
+  // console.log("adasd", startDateTime, endDataTime, restData);
   const { page, limit, sortBy, sortOrder, skip } = pagination(options);
-  console.log("params", restData);
+  //("params", restData);
   const andCondition: Prisma.ScheduleWhereInput[] = [];
-
+  if (startDate && endDate) {
+    andCondition.push({
+      AND: [
+        {
+          startDateTime: {
+            gte: startDate,
+          },
+        },
+        {
+          endDateTime: {
+            lte: endDate,
+          },
+        },
+      ],
+    });
+  }
   if (Object.keys(restData).length > 0) {
     andCondition.push({
       AND: Object.keys(restData).map((key) => ({
@@ -67,26 +85,27 @@ const getAllFromDb = async (params: any, options: any) => {
     });
   }
 
+  // //(andCondition);
+
   const whereCondition: Prisma.ScheduleWhereInput = { AND: andCondition };
-  console.log(whereCondition);
-  //  {
-  //   AND: [
-  //     {
-  //       OR: [
-  //         { name: { contains: "john", mode: "insensitive" } },
-  //         { email: { contains: "john", mode: "insensitive" } }
-  //       ]
-  //     },
-  //     {
-  //       AND: [
-  //         { isActive: { equals: true } },
-  //         { department: { equals: "sales" } }
-  //       ]
-  //     }
-  //   ]
-  // }
+  const doctorSchedule = await prisma.doctorSchedules.findMany({
+    where: {
+      doctor: {
+        email: user.email,
+      },
+    },
+  });
+  console.log(doctorSchedule, "sdasd");
+  const doctorScheduleIds = doctorSchedule.map(
+    (schedule) => schedule.scheduleId
+  );
   const result = await prisma.schedule.findMany({
-    where: whereCondition,
+    where: {
+      ...whereCondition,
+      id: {
+        notIn: doctorScheduleIds,
+      },
+    },
     skip,
     take: limit,
     orderBy:
@@ -98,7 +117,12 @@ const getAllFromDb = async (params: any, options: any) => {
   });
 
   const total = await prisma.schedule.count({
-    where: whereCondition,
+    where: {
+      ...whereCondition,
+      id: {
+        notIn: doctorScheduleIds,
+      },
+    },
   });
   return {
     meta: {
@@ -109,8 +133,27 @@ const getAllFromDb = async (params: any, options: any) => {
     data: result,
   };
 };
+const getByIdFromDB = async (id: string) => {
+  const result = await prisma.schedule.findUnique({
+    where: {
+      id,
+    },
+  });
+  //console.log(result?.startDateTime.getHours() + ":" + result?.startDateTime.getMinutes())
+  return result;
+};
 
+const deleteFromDB = async (id: string) => {
+  const result = await prisma.schedule.delete({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
 export const scheduleService = {
   insertIntoDb,
   getAllFromDb,
+  getByIdFromDB,
+  deleteFromDB,
 };

@@ -83,7 +83,7 @@ const getAllDoctorFromDb = async (params: any, options: any) => {
   });
 
   const whereCondition: Prisma.DoctorWhereInput = { AND: andCondition };
-  console.log(whereCondition);
+  // console.log(whereCondition);
   //  {
   //   AND: [
   //     {
@@ -104,19 +104,15 @@ const getAllDoctorFromDb = async (params: any, options: any) => {
     where: whereCondition,
     skip,
     take: limit,
+    include: {
+      specialty: true,
+    },
     orderBy:
       sortBy && sortOrder
         ? {
             [sortBy]: sortOrder,
           }
         : { createdAt: "desc" },
-    select: {
-      id: true,
-      email: true,
-
-      createdAt: true,
-      updatedAt: true,
-    },
   });
 
   const total = await prisma.doctor.count({

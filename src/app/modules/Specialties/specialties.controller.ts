@@ -4,6 +4,7 @@ import { sendResponse } from "../../../utils/sendResponse";
 import { specialtiesService } from "./specialties.service";
 
 const createSpecialties = catchAsync(async (req, res) => {
+  console.log("req.body", req.body);
   const result = await specialtiesService.createSpecialtiesIntoDb(req);
   sendResponse(res, {
     message: "Specialties Created Successfully",

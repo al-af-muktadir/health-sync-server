@@ -6,7 +6,7 @@ import { QueriesFields, UserFilterableFields } from "./User.constant";
 import { UserServices } from "./User.service";
 
 const createAdmin = catchAsync(async (req, res) => {
-  console.log(req.file);
+  // console.log(req.file);
   const result = await UserServices.createAdminIntoDb(req);
   sendResponse(res, {
     statusCode: 200,
@@ -15,7 +15,7 @@ const createAdmin = catchAsync(async (req, res) => {
   });
 });
 const createDoctor = catchAsync(async (req, res) => {
-  // console.log(req.body);
+  // console.log("doc", req.body);
   const result = await UserServices.createDoctorIntoDb(req);
   // console.log(result);
   sendResponse(res, {
@@ -27,7 +27,7 @@ const createDoctor = catchAsync(async (req, res) => {
 const createPatient = catchAsync(async (req, res) => {
   console.log("incpm", req.body);
   const result = await UserServices.createPatientIntoDb(req);
-  // console.log(result);
+  console.log(result);
   sendResponse(res, {
     statusCode: 200,
     message: "Patient Created Successfully",
@@ -65,6 +65,7 @@ const userSoftDelete = catchAsync(async (req, res) => {
 });
 
 const getUser = catchAsync(async (req, res) => {
+  console.log("req.user", req.user);
   const result = await UserServices.getUser(req.user);
   sendResponse(res, {
     data: result,
