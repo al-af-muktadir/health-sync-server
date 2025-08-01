@@ -24,9 +24,11 @@ const auth = (...roles) => {
             // console.log("Token:", token);
             if (!token) {
                 throw new ApiError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "You are not Authorized");
+                // console.log("No token provided");
             }
             const verifiedUser = jwtEncoder_1.jwtEncoded.verifyToken(token, config_1.default.jwt_secret);
             req.user = verifiedUser;
+            // console.log("User:", verifiedUser);
             // console.log("Verified User:", verifiedUser);
             if (roles.length && !roles.includes(verifiedUser.role)) {
                 throw new ApiError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "You are Unauthorized");

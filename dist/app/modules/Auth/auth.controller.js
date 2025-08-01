@@ -18,7 +18,7 @@ const catchAsync_1 = __importDefault(require("../../../utils/catchAsync"));
 const sendResponse_1 = require("../../../utils/sendResponse");
 const auth_servives_1 = require("./auth.servives");
 const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("hittingcontroller");
+    // console.log("hittingcontroller");
     const result = yield auth_servives_1.authServices.loginUser(req.body);
     const { refreshToken } = result;
     res.cookie("refreshToken", refreshToken, { secure: false, httpOnly: true });
@@ -50,7 +50,7 @@ const changePassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     });
 }));
 const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(req.body);
+    // console.log(req.body);
     const result = yield auth_servives_1.authServices.forgotPassword(req.body);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -60,7 +60,7 @@ const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 }));
 const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.headers.authorization || "";
-    console.log(req.body);
+    // console.log(req.body);
     const result = yield auth_servives_1.authServices.resetPassword(token, req.body);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,

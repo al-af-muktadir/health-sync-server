@@ -20,7 +20,7 @@ const sendResponse_1 = require("../../../utils/sendResponse");
 const User_constant_1 = require("./User.constant");
 const User_service_1 = require("./User.service");
 const createAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(req.file);
+    // console.log(req.file);
     const result = yield User_service_1.UserServices.createAdminIntoDb(req);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: 200,
@@ -29,7 +29,7 @@ const createAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
     });
 }));
 const createDoctor = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // console.log(req.body);
+    // console.log("doc", req.body);
     const result = yield User_service_1.UserServices.createDoctorIntoDb(req);
     // console.log(result);
     (0, sendResponse_1.sendResponse)(res, {
@@ -41,7 +41,7 @@ const createDoctor = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
 const createPatient = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("incpm", req.body);
     const result = yield User_service_1.UserServices.createPatientIntoDb(req);
-    // console.log(result);
+    console.log(result);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: 200,
         message: "Patient Created Successfully",
@@ -73,6 +73,7 @@ const userSoftDelete = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     });
 }));
 const getUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("req.user", req.user);
     const result = yield User_service_1.UserServices.getUser(req.user);
     (0, sendResponse_1.sendResponse)(res, {
         data: result,

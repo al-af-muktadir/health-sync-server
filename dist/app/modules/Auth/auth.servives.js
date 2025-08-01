@@ -59,9 +59,10 @@ const loginUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
         email: userInfo.email,
         password: userInfo.password,
         profilePhoto: data === null || data === void 0 ? void 0 : data.profilePhoto,
+        role: userInfo.role,
         name: data === null || data === void 0 ? void 0 : data.name,
     };
-    console.log(modifiedData);
+    // console.log(modifiedData);
     const accessToken = jwtEncoder_1.jwtEncoded.generateToken(modifiedData, config_1.default.jwt_secret, config_1.default.jwt_expires_in);
     const refreshToken = jwtEncoder_1.jwtEncoded.generateToken(modifiedData, config_1.default.refresh_secret, config_1.default.refresh_expires_in);
     return {
@@ -141,7 +142,7 @@ const changePassword = (userData, data) => __awaiter(void 0, void 0, void 0, fun
     };
 });
 const forgotPassword = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("payload", payload);
+    // console.log("payload", payload);
     const userData = yield Prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: payload.email,

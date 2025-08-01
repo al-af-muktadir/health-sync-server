@@ -18,6 +18,7 @@ const catchAsync_1 = __importDefault(require("../../../utils/catchAsync"));
 const sendResponse_1 = require("../../../utils/sendResponse");
 const specialties_service_1 = require("./specialties.service");
 const createSpecialties = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("req.body", req.body);
     const result = yield specialties_service_1.specialtiesService.createSpecialtiesIntoDb(req);
     (0, sendResponse_1.sendResponse)(res, {
         message: "Specialties Created Successfully",

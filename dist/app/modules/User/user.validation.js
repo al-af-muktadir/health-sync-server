@@ -22,18 +22,21 @@ exports.createDoctor = zod_1.z.object({
             .email("Invalid email format"),
         contactNumber: zod_1.z.string({ required_error: "Contact number is required" }),
         address: zod_1.z.string({ required_error: "Address is required" }),
-        profilePhoto: zod_1.z.string().optional(), // Optional in Prisma
+        profilePhoto: zod_1.z.string().optional(),
         registrationNumber: zod_1.z.string({
             required_error: "Registration number is required",
         }),
-        experience: zod_1.z.number().int().nonnegative().optional(), // Matches Int in Prisma
-        gender: zod_1.z.enum([client_1.Gender.MALE, client_1.Gender.FEMALE]),
+        experience: zod_1.z.number().int().nonnegative().optional(),
+        gender: zod_1.z.enum([client_1.Gender.MALE, client_1.Gender.FEMALE], {
+            required_error: "Gender is required",
+        }),
         appointmentFee: zod_1.z.number({ required_error: "Appointment fee is required" }),
         qualification: zod_1.z.string({ required_error: "Qualification is required" }),
         currentWorkingPlace: zod_1.z.string({
             required_error: "Current working place is required",
         }),
         designation: zod_1.z.string({ required_error: "Designation is required" }),
+        specialtyId: zod_1.z.string({ required_error: "Specialty ID is required" }), // ✅ ADDED
     }),
 });
 const createPatient = zod_1.z.object({

@@ -9,6 +9,6 @@ const doctor_controller_1 = require("./doctor.controller");
 const router = express_1.default.Router();
 router.get("/", doctor_controller_1.docController.getAllDoctor);
 router.get("/:id", doctor_controller_1.docController.getDoctorById);
-router.patch("/", doctor_controller_1.docController.updatedoctor);
+// router.patch("/", docController.updatedoctor);
 router.patch("/soft/:id", doctor_controller_1.docController.deleteDoctor);
 exports.docRoute = router;

@@ -41,18 +41,18 @@ const getAllDoctor = catchAsync(async (req, res) => {
     meta: result.meta,
   });
 });
-const updatedoctor = catchAsync(async (req, res) => {
-  const result = await docServices.updatedoctor(req.params.id, req.body);
-  sendResponse(res, {
-    statusCode: 200,
-    message: "Updated Successfully",
-    data: result,
-  });
-});
+// const updatedoctor = catchAsync(async (req, res) => {
+//   const result = await docServices.updatedoctor(req.params.id, req.body);
+//   sendResponse(res, {
+//     statusCode: 200,
+//     message: "Updated Successfully",
+//     data: result,
+//   });
+// });
 
 export const docController = {
   deleteDoctor,
   getDoctorById,
   getAllDoctor,
-  updatedoctor,
+  // updatedoctor,
 };

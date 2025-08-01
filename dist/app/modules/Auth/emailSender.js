@@ -33,6 +33,6 @@ const emailSender = (email, html) => __awaiter(void 0, void 0, void 0, function*
         subject: "RESET PASSWORD",
         html: html,
     });
-    console.log("Message sent:", info.messageId);
+    // console.log("Message sent:", info.messageId);
 });
 exports.default = emailSender;

@@ -50,8 +50,17 @@ const updateIntoDb = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const deletePatient = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield patient_service_1.patientService.deletePatient(req.params.id);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        message: " Patient Deleted Successfully",
+        data: result,
+    });
+}));
 exports.patientController = {
     getAllPatient,
     updateIntoDb,
+    deletePatient,
     getById,
 };

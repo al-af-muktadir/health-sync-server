@@ -30,7 +30,7 @@ const patient_constant_1 = require("./patient.constant");
 const getAllPatientFromDb = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { searchTerm } = params, restData = __rest(params, ["searchTerm"]);
     const { page, limit, sortBy, sortOrder, skip } = (0, Paginator_1.pagination)(options);
-    console.log("params", restData);
+    // console.log("params", restData);
     const andCondition = [];
     const searchFields = patient_constant_1.patientSearchableFields;
     if (params.searchTerm) {
@@ -58,7 +58,7 @@ const getAllPatientFromDb = (params, options) => __awaiter(void 0, void 0, void 
     });
     // console.log(andCondition);
     const whereCondition = { AND: andCondition };
-    console.log(whereCondition);
+    // console.log(whereCondition);
     //  {
     //   AND: [
     //     {
@@ -110,16 +110,82 @@ const getById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return result;
 });
 const updateIntoDb = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield Prisma_1.default.patient.update({
+    const { patientHealthData, medicalReports } = data, restData = __rest(data, ["patientHealthData", "medicalReports"]);
+    yield Prisma_1.default.patient.findUniqueOrThrow({
         where: {
             id,
         },
-        data: data,
     });
+    const result = yield Prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const updateData = yield transactionClient.patient.update({
+            where: {
+                id,
+            },
+            data: restData,
+            include: {
+                patient_health_data: true,
+                medical_report: true,
+            },
+        });
+        if (patientHealthData) {
+            const healthData = yield transactionClient.patientHealthData.upsert({
+                where: {
+                    patientId: id,
+                },
+                update: patientHealthData,
+                create: Object.assign(Object.assign({}, patientHealthData), { patientId: id }),
+            });
+        }
+        if (medicalReports) {
+            const medicalReport = yield transactionClient.medicalReport.create({
+                data: Object.assign(Object.assign({}, medicalReports), { patientId: id }),
+            });
+        }
+    }));
+    const responseData = yield Prisma_1.default.patient.findUnique({
+        where: {
+            id,
+        },
+        include: {
+            patient_health_data: true,
+            medical_report: true,
+        },
+    });
+    return responseData;
+});
+const deletePatient = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield Prisma_1.default.patient.findUniqueOrThrow({
+        where: {
+            id,
+        },
+    });
+    const result = yield Prisma_1.default.$transaction((TC) => __awaiter(void 0, void 0, void 0, function* () {
+        TC.patientHealthData.delete({
+            where: {
+                patientId: id,
+            },
+        });
+        TC.medicalReport.deleteMany({
+            where: {
+                patientId: id,
+            },
+        });
+        yield TC.patient.delete({
+            where: {
+                id: id,
+            },
+        });
+        yield TC.user.delete({
+            where: {
+                email: user.email,
+            },
+        });
+    }));
     return result;
 });
 exports.patientService = {
     getAllPatientFromDb,
     getById,
     updateIntoDb,
+    deletePatient,
 };

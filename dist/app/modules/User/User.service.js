@@ -33,12 +33,13 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const createDoctorIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const file = req.file;
-    console.log("req.body", req.body);
-    if (req.file) {
-        const { secure_url } = yield fileUploader_1.fileUploader.uploadToCloudinary(req.file);
-        req.body.admin.profilePhoto = secure_url;
+    console.log("req.body in service", req.body.doctor);
+    if (file) {
+        const uploadToCloudinary = (yield fileUploader_1.fileUploader.uploadToCloudinary(file));
+        req.body.doctor.profilePhoto = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
     }
     const hashedPassword = yield bcrypt_1.default.hash(req.body.password, 12);
+    console.log("hashedPassword", hashedPassword);
     const userData = {
         email: req.body.doctor.email,
         password: hashedPassword,
@@ -51,15 +52,14 @@ const createDoctorIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* 
         const createDoctorData = yield transactionClient.doctor.create({
             data: req.body.doctor,
         });
-        console.log("createDoctorData", createDoctorData);
         return createDoctorData;
     }));
     console.log("result", result);
     return result;
 });
 const createPatientIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    const file = req.file;
-    console.log("req.body", req.body);
+    const file = req === null || req === void 0 ? void 0 : req.file;
+    console.log("req.file", file);
     if (file) {
         const uploadToCloudinary = (yield fileUploader_1.fileUploader.uploadToCloudinary(file));
         req.body.patient.profilePhoto = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
@@ -77,10 +77,10 @@ const createPatientIntoDb = (req) => __awaiter(void 0, void 0, void 0, function*
         const createPatientData = yield transactionClient.patient.create({
             data: req.body.patient,
         });
-        console.log("createPatientData", createPatientData);
+        // console.log("createPatientData", createPatientData);
         return createPatientData;
     }));
-    console.log("result", result);
+    // ("console.logresult", result);
     return result;
 });
 const createAdminIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* () {
@@ -113,7 +113,7 @@ const createAdminIntoDb = (req) => __awaiter(void 0, void 0, void 0, function* (
 const getAllAdminFromDb = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { searchTerm } = params, restData = __rest(params, ["searchTerm"]);
     const { page, limit, sortBy, sortOrder, skip } = (0, Paginator_1.pagination)(options);
-    console.log("params", restData);
+    // console.log("params", restData);
     const andCondition = [];
     const searchFields = User_constant_1.searchableFields;
     if (params.searchTerm) {
@@ -208,7 +208,7 @@ const getAllUserFromDb = (params, options) => __awaiter(void 0, void 0, void 0, 
     }
     // console.log(andCondition);
     const whereCondition = andCondition.length > 0 ? { AND: andCondition } : {};
-    console.log(whereCondition);
+    // console.log(wconsole.loghereCondition);
     //  {
     //   AND: [
     //     {
@@ -280,7 +280,7 @@ const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const getUser = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let UserInformation;
-    if ((params.role = client_1.UserRole.ADMIN)) {
+    if (params.role === "ADMIN") {
         UserInformation = yield prisma.admin.findUniqueOrThrow({
             where: {
                 email: params.email,
@@ -288,7 +288,7 @@ const getUser = (params) => __awaiter(void 0, void 0, void 0, function* () {
         });
         return UserInformation;
     }
-    else if ((params.role = client_1.UserRole.DOCTOR)) {
+    else if (params.role === "DOCTOR") {
         UserInformation = yield prisma.doctor.findUniqueOrThrow({
             where: {
                 email: params.email,
@@ -296,7 +296,8 @@ const getUser = (params) => __awaiter(void 0, void 0, void 0, function* () {
         });
         return UserInformation;
     }
-    else if ((params.role = client_1.UserRole.PATIENT)) {
+    else if (params.role === "PATIENT") {
+        console.log("i am user");
         UserInformation = yield prisma.patient.findUniqueOrThrow({
             where: {
                 email: params.email,
